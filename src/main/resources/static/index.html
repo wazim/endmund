@@ -1,0 +1,55 @@
+<html ng-app="endmundApp">
+<head>
+    <title>Endmund - End to End Tests for Project Edmund</title>
+    <link rel="stylesheet" type="text/css" href="thirdparty/css/bootstrap.min.css">
+    <script language="javascript" type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.js"></script>
+    <script language="javascript" type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/angular.js/1.3.14/angular.min.js"></script>
+    <script language="javascript" type="text/javascript" src="thirdparty/js/raphael-min.js"></script>
+    <script language="javascript" type="text/javascript" src="thirdparty/js/justgage.js"></script>
+    <script language="javascript" type="text/javascript" src="thirdparty/js/bootstrap.min.js"></script>
+    <script language="javascript" type="text/javascript" src="thirdparty/js/angular-gage.js"></script>
+
+    <script language="javascript" type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+    <script language="javascript" type="text/javascript"
+            src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/0.3.4/sockjs.min.js"></script>
+
+    <script language="javascript" type="text/javascript" src="js/main.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/theme.css">
+</head>
+<body ng-controller="EndmundCtrl">
+<div class="container">
+    <center><h1>Endmund</h1>
+        <p>
+        <div class="gauge" justgage
+             value="{{value}}"
+             value-font-color="{{valueFontColor}}"
+             min="{{min}}"
+             gauge-color="{{gaugeColor}}"
+             level-colors="{{levelColors}}"
+             levelGradient="{{levelGradient}}"
+             symbol="{{symbol}}"
+             hide-min-max="{{hideMinMax}}"
+             max="{{max}}">
+        </div>
+    </center>
+
+    <div class="results">
+        <div class="result row" ng-repeat="result in results | orderBy : '$$hashKey' : true">
+            <div class="col-md-6">
+                {{result.guardianClueAndSolution.clue}}
+            </div>
+            <div class="col-md-3">
+                {{result.guardianClueAndSolution.clueSolution}}
+            </div>
+            <div class="col-md-3" ng-class="(result.edmundCorrect===true) ? 'correct' : 'incorrect'">
+                {{result.edmundSolution}}
+            </div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
