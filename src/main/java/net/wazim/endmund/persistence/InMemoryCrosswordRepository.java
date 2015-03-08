@@ -9,12 +9,15 @@ import org.springframework.messaging.support.GenericMessage;
 import java.util.ArrayList;
 import java.util.List;
 
+import static net.wazim.endmund.utils.NextIdGenerator.getNextId;
+
+@SuppressWarnings("unused")
 public class InMemoryCrosswordRepository implements CrosswordRepository {
 
     @Autowired
     private SimpMessageSendingOperations simpMessageSendingOperations;
 
-    private int crosswordId = 26505;
+    private int crosswordId = 26100;
     private List<GuardianClueAndSolution> allCluesAndSolutions = new ArrayList<>();
     private List<EdmundSolution> edmundsSolutions = new ArrayList<>();
 
@@ -49,7 +52,7 @@ public class InMemoryCrosswordRepository implements CrosswordRepository {
                 cluesAndSolution.getClue(),
                 solution,
                 cluesAndSolution.getClueSolution()));
-        EdmundSolution edmundSolution = new EdmundSolution(cluesAndSolution, solution);
+        EdmundSolution edmundSolution = new EdmundSolution(cluesAndSolution, solution, getNextId());
         simpMessageSendingOperations.convertAndSend("/topic/solutions", edmundSolution);
         edmundsSolutions.add(edmundSolution);
     }

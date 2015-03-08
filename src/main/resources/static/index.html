@@ -37,7 +37,7 @@
     </center>
 
     <div class="results">
-        <div class="result row" ng-repeat="result in results | orderBy : '$$hashKey' : true">
+        <div class="result row" ng-repeat="result in results | orderBy : 'id' : true">
             <div class="col-md-6">
                 {{result.guardianClueAndSolution.clue}}
             </div>

@@ -4,10 +4,12 @@ public class EdmundSolution {
 
     private final GuardianClueAndSolution guardianClueAndSolution;
     private final String edmundSolution;
+    private final int id;
 
-    public EdmundSolution(GuardianClueAndSolution guardianClueAndSolution, String edmundSolution) {
+    public EdmundSolution(GuardianClueAndSolution guardianClueAndSolution, String edmundSolution, int id) {
         this.guardianClueAndSolution = guardianClueAndSolution;
         this.edmundSolution = edmundSolution;
+        this.id = id;
     }
 
     public String getEdmundSolution() {
@@ -21,4 +23,9 @@ public class EdmundSolution {
     public boolean isEdmundCorrect() {
         return guardianClueAndSolution.getClueSolution().toUpperCase().contains(edmundSolution.toUpperCase());
     }
+
+    public int getId() {
+        return id;
+    }
+
 }
