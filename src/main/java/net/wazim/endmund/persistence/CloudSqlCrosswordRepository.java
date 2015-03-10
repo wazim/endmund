@@ -2,19 +2,13 @@ package net.wazim.endmund.persistence;
 
 import net.wazim.endmund.domain.EdmundSolution;
 import net.wazim.endmund.domain.GuardianClueAndSolution;
-import org.postgresql.ds.PGSimpleDataSource;
+import net.wazim.endmund.utils.NextIdGenerator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
-import org.springframework.messaging.support.GenericMessage;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-
-import static net.wazim.endmund.utils.NextIdGenerator.getNextId;
 
 @SuppressWarnings("unused")
 public class CloudSqlCrosswordRepository implements CrosswordRepository {
@@ -22,17 +16,14 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
     @Autowired
     private SimpMessageSendingOperations simpMessageSendingOperations;
 
+    private final JdbcTemplate jdbcTemplate;
+    private final NextIdGenerator nextIdGenerator;
     private List<GuardianClueAndSolution> allCluesAndSolutions = new ArrayList<>();
     private List<EdmundSolution> edmundsSolutions = new ArrayList<>();
-    private JdbcTemplate jdbcTemplate;
 
-    public CloudSqlCrosswordRepository() {
-        PGSimpleDataSource dataSource = new PGSimpleDataSource();
-        dataSource.setServerName("babar.elephantsql.com");
-        dataSource.setDatabaseName(System.getProperty("database"));
-        dataSource.setUser(System.getProperty("database"));
-        dataSource.setPassword(System.getProperty("database.password"));
-        jdbcTemplate = new JdbcTemplate(dataSource);
+    public CloudSqlCrosswordRepository(JdbcTemplate jdbcTemplate, NextIdGenerator nextIdGenerator) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.nextIdGenerator = nextIdGenerator;
     }
 
     @Override
@@ -78,7 +69,7 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
                 cluesAndSolution.getClue(),
                 solution,
                 cluesAndSolution.getClueSolution()));
-        EdmundSolution edmundSolution = new EdmundSolution(cluesAndSolution, solution, getNextId());
+        EdmundSolution edmundSolution = new EdmundSolution(cluesAndSolution, solution, nextIdGenerator.getNextId());
         simpMessageSendingOperations.convertAndSend("/topic/solutions", edmundSolution);
         jdbcTemplate.update(String.format("INSERT INTO solutions " +
                         "(id, clue, solution_length, solution, edmund_solution)" +
