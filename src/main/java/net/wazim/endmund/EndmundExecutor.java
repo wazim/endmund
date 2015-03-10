@@ -4,9 +4,12 @@ import net.wazim.endmund.client.EndmundResponseHandler;
 import net.wazim.endmund.client.GuardianCrosswordClient;
 import net.wazim.endmund.domain.GuardianClueAndSolution;
 import net.wazim.endmund.persistence.CrosswordRepository;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -14,28 +17,35 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.List;
+
+import static org.apache.commons.codec.binary.Base64.encodeBase64;
 
 @SuppressWarnings("unused")
 @Component
 public class EndmundExecutor {
 
-    public static final String EDMUND_JAR_NAME = "edmund-web-1.0-SNAPSHOT.jar";
     public static final String BASE_EDMUND_URL = "http://localhost:9090";
     @Autowired
     private GuardianCrosswordClient guardianCrosswordClient;
     @Autowired
     private CrosswordRepository crosswordRepository;
+    private String edmundJarName = "project-Edmund.jar";
+    private Process edmundRunningProcess;
+    public static final String DOWNLOAD_LINK_FOR_LATEST_RELEASE = "https://s3-eu-west-1.amazonaws.com/project-edmund/project-Edmund.jar";
 
     @Scheduled(fixedDelay = 60000)
     public void runEndToEndTesting() {
         System.out.println("Starting schedule...");
         try {
-//            deployAndStartEdmund();
+            deployAndStartEdmund();
+
             runCluesAgainstEdmund(guardianCrosswordClient.getCluesAndSolutions());
 
-//            deleteEdmund();
+            killAndDeleteEdmund();
         } catch (Exception e) {
             System.out.println("Failed to deploy and start Endmund: " + e);
         }
@@ -67,28 +77,41 @@ public class EndmundExecutor {
         return solution.get(0).toString().toUpperCase();
     }
 
-    private void deleteEdmund() throws IOException {
-        Runtime.getRuntime().exec("rm -rf " + EDMUND_JAR_NAME);
+    private void killAndDeleteEdmund() throws IOException, InterruptedException {
+        Runtime runtime = Runtime.getRuntime();
+        System.out.println("Killing Edmund");
+        edmundRunningProcess.destroyForcibly();
+
+        while (edmundRunningProcess.isAlive()) {
+            Thread.sleep(500);
+            System.out.println("Waiting until Edmund is dead!");
+        }
+
+        runtime.exec("rm -rf " + edmundJarName);
         System.out.println("Deleted Edmund JAR");
     }
 
     private void deployAndStartEdmund() throws InterruptedException, IOException {
         Runtime runtime = Runtime.getRuntime();
-        System.out.println("Downloading Edmund JAR");
-        Process exec = runtime.exec("wget https://github.com/wazim/edmund/releases/download/1.5.1/" + EDMUND_JAR_NAME);
-        Thread.sleep(5000);
-        runtime.exec("java -jar " + EDMUND_JAR_NAME);
-        System.out.println("Running Edmund JAR");
-        Thread.sleep(2000);
-        try {
-            RestTemplate restTemplate = new RestTemplate();
-            restTemplate.setErrorHandler(new EndmundResponseHandler());
+        RestTemplate restTemplate = new RestTemplate();
+        restTemplate.setErrorHandler(new EndmundResponseHandler());
 
+
+        String[] piecesOfUrl = DOWNLOAD_LINK_FOR_LATEST_RELEASE.split("/");
+        edmundJarName = piecesOfUrl[piecesOfUrl.length - 1];
+
+        System.out.println("Downloading Edmund JAR");
+
+        FileUtils.copyURLToFile(new URL(DOWNLOAD_LINK_FOR_LATEST_RELEASE), new File(edmundJarName));
+
+        edmundRunningProcess = runtime.exec("java -jar " + edmundJarName);
+        System.out.println("Running Edmund JAR");
+        try {
             int edmundResponse = 0;
             while (edmundResponse != 200) {
                 Thread.sleep(5000);
                 try {
-                    ResponseEntity<String> responseFromEdmund = restTemplate.getForEntity(BASE_EDMUND_URL + "/health", String.class);
+                    ResponseEntity<String> responseFromEdmund = restTemplate.getForEntity(BASE_EDMUND_URL, String.class);
                     edmundResponse = responseFromEdmund.getStatusCode().value();
                     System.out.println(edmundResponse);
                 } catch (Exception e) {
