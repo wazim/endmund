@@ -8,6 +8,8 @@
 *.iml
 *.iws
 *.jar*
+*dictionary*
+*thesaurus*
 
 # Mac
 .DS_Store

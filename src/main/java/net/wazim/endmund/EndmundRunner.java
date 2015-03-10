@@ -3,7 +3,7 @@ package net.wazim.endmund;
 import net.wazim.endmund.client.GuardianCrosswordClient;
 import net.wazim.endmund.controllers.EndmundController;
 import net.wazim.endmund.persistence.CrosswordRepository;
-import net.wazim.endmund.persistence.InMemoryCrosswordRepository;
+import net.wazim.endmund.persistence.CloudSqlCrosswordRepository;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -34,7 +34,7 @@ public class EndmundRunner {
 
     @Bean
     public CrosswordRepository crosswordRepository() {
-        return new InMemoryCrosswordRepository();
+        return new CloudSqlCrosswordRepository();
     }
 
     @Bean
