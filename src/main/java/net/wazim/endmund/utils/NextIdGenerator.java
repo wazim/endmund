@@ -15,7 +15,7 @@ public class NextIdGenerator {
     public int getNextId() {
         int lastId = getLastId().get(0);
 
-        return lastId++;
+        return lastId+1;
     }
 
     private List<Integer> getLastId() {
