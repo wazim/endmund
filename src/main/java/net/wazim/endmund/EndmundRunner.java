@@ -32,7 +32,7 @@ public class EndmundRunner {
     public EndmundRunner() {
         verify(System.getProperty("database") != null);
         verify(System.getProperty("schedule.delay") != null);
-        verify(System.getenv("database.password") != null || System.getProperty("database.password") != null);
+        verify(System.getenv("DATABASE_PASSWORD") != null || System.getProperty("database.password") != null);
     }
 
     @Bean
@@ -70,7 +70,7 @@ public class EndmundRunner {
         if(System.getProperty("database.password") != null) {
             dataSource.setPassword(System.getProperty("database.password"));
         } else {
-            dataSource.setPassword(System.getenv("database.password"));
+            dataSource.setPassword(System.getenv("DATABASE_PASSWORD"));
         }
 
         return new JdbcTemplate(dataSource);
