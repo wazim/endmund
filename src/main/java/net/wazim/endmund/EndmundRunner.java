@@ -2,17 +2,21 @@ package net.wazim.endmund;
 
 import net.wazim.endmund.client.GuardianCrosswordClient;
 import net.wazim.endmund.controllers.EndmundController;
-import net.wazim.endmund.persistence.CrosswordRepository;
 import net.wazim.endmund.persistence.CloudSqlCrosswordRepository;
+import net.wazim.endmund.persistence.CrosswordRepository;
 import net.wazim.endmund.utils.NextIdGenerator;
 import org.postgresql.ds.PGSimpleDataSource;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.EnableScheduling;
+
+import static com.google.common.base.Verify.verify;
 
 @SuppressWarnings("unused")
 @Configuration
@@ -23,6 +27,12 @@ public class EndmundRunner {
 
     public static void main(String[] args) {
         SpringApplication.run(EndmundRunner.class, args);
+    }
+
+    public EndmundRunner() {
+        verify(System.getProperty("database") != null);
+        verify(System.getProperty("schedule.delay") != null);
+        verify(System.getenv("database.password") != null || System.getProperty("database.password") != null);
     }
 
     @Bean
@@ -56,8 +66,25 @@ public class EndmundRunner {
         dataSource.setServerName("babar.elephantsql.com");
         dataSource.setDatabaseName(System.getProperty("database"));
         dataSource.setUser(System.getProperty("database"));
-        dataSource.setPassword(System.getProperty("database.password"));
+
+        if(System.getProperty("database.password") != null) {
+            dataSource.setPassword(System.getProperty("database.password"));
+        } else {
+            dataSource.setPassword(System.getenv("database.password"));
+        }
+
         return new JdbcTemplate(dataSource);
+    }
+
+    @Bean
+    public EmbeddedServletContainerFactory servletContainer() {
+        TomcatEmbeddedServletContainerFactory factory = new TomcatEmbeddedServletContainerFactory();
+        if(System.getenv("PORT") != null) {
+            factory.setPort(Integer.parseInt(System.getenv("PORT")));
+        } else {
+            factory.setPort(8080);
+        }
+        return factory;
     }
 
 }

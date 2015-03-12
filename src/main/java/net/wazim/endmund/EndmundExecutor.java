@@ -6,10 +6,9 @@ import net.wazim.endmund.domain.GuardianClueAndSolution;
 import net.wazim.endmund.persistence.CrosswordRepository;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
@@ -22,12 +21,11 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 
-import static org.apache.commons.codec.binary.Base64.encodeBase64;
-
 @SuppressWarnings("unused")
 @Component
 public class EndmundExecutor {
 
+    private Logger logger = LoggerFactory.getLogger(EndmundExecutor.class);
     public static final String BASE_EDMUND_URL = "http://localhost:9090";
     @Autowired
     private GuardianCrosswordClient guardianCrosswordClient;
@@ -37,9 +35,9 @@ public class EndmundExecutor {
     private Process edmundRunningProcess;
     public static final String DOWNLOAD_LINK_FOR_LATEST_RELEASE = "https://s3-eu-west-1.amazonaws.com/project-edmund/project-Edmund.jar";
 
-    @Scheduled(fixedDelay = 60000)
+    @Scheduled(fixedDelayString = "${schedule.delay}", initialDelay = 60000)
     public void runEndToEndTesting() {
-        System.out.println("Starting schedule...");
+        logger.info("Starting schedule...");
         try {
             deployAndStartEdmund();
 
@@ -47,7 +45,7 @@ public class EndmundExecutor {
 
             killAndDeleteEdmund();
         } catch (Exception e) {
-            System.out.println("Failed to deploy and start Endmund: " + e);
+            logger.error("Failed to deploy and start Endmund: " + e);
         }
     }
 
@@ -69,7 +67,7 @@ public class EndmundExecutor {
             } catch (Exception ignored) {
             }
         }
-        System.out.println("Finished running clues!");
+        logger.info("Finished running clues!");
     }
 
     private static String extractSolution(String body) {
@@ -79,16 +77,16 @@ public class EndmundExecutor {
 
     private void killAndDeleteEdmund() throws IOException, InterruptedException {
         Runtime runtime = Runtime.getRuntime();
-        System.out.println("Killing Edmund");
+        logger.info("Killing Edmund");
         edmundRunningProcess.destroyForcibly();
 
         while (edmundRunningProcess.isAlive()) {
             Thread.sleep(500);
-            System.out.println("Waiting until Edmund is dead!");
+            logger.info("Waiting until Edmund is dead!");
         }
 
         runtime.exec("rm -rf " + edmundJarName);
-        System.out.println("Deleted Edmund JAR");
+        logger.info("Deleted Edmund JAR");
     }
 
     private void deployAndStartEdmund() throws InterruptedException, IOException {
@@ -100,12 +98,12 @@ public class EndmundExecutor {
         String[] piecesOfUrl = DOWNLOAD_LINK_FOR_LATEST_RELEASE.split("/");
         edmundJarName = piecesOfUrl[piecesOfUrl.length - 1];
 
-        System.out.println("Downloading Edmund JAR");
+        logger.info("Downloading Edmund JAR");
 
         FileUtils.copyURLToFile(new URL(DOWNLOAD_LINK_FOR_LATEST_RELEASE), new File(edmundJarName));
 
         edmundRunningProcess = runtime.exec("java -jar " + edmundJarName);
-        System.out.println("Running Edmund JAR");
+        logger.info("Running Edmund JAR");
         try {
             int edmundResponse = 0;
             while (edmundResponse != 200) {
@@ -113,13 +111,13 @@ public class EndmundExecutor {
                 try {
                     ResponseEntity<String> responseFromEdmund = restTemplate.getForEntity(BASE_EDMUND_URL, String.class);
                     edmundResponse = responseFromEdmund.getStatusCode().value();
-                    System.out.println(edmundResponse);
+                    logger.info("Response from Edmund: "+edmundResponse);
                 } catch (Exception e) {
-                    System.out.println(String.format("Couldn't connect because %s. Retrying...", e.getMessage()));
+                    logger.warn(String.format("Couldn't connect because %s. Retrying...", e.getMessage()));
                 }
             }
         } catch (Exception ignored) {
-            System.out.println("Could not connect to Edmund");
+            logger.error("Could not connect to Edmund");
         }
     }
 

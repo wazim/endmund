@@ -6,6 +6,8 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,6 +18,7 @@ import java.util.TreeMap;
 
 public class GuardianCrosswordClient {
 
+    private Logger logger = LoggerFactory.getLogger(GuardianCrosswordClient.class);
     private final String baseGuardianCrosswordUri;
     private final CrosswordRepository crosswordRepository;
     private final RestTemplate client;
@@ -47,13 +50,13 @@ public class GuardianCrosswordClient {
         int currentId = crosswordRepository.getIdForCrossword();
         int nextId = crosswordRepository.getIdForCrossword() + 1;
         if (!client.getForEntity(baseGuardianCrosswordUri + crosswordRepository.getIdForCrossword(), String.class).getStatusCode().is2xxSuccessful()) {
-            System.out.println("Can't retrieve cryptic crossword for " + currentId);
+            logger.warn("Can't retrieve cryptic crossword for " + currentId);
             if (client.getForEntity(baseGuardianCrosswordUri + nextId, String.class).getStatusCode().is2xxSuccessful()) {
-                System.out.println("Setting cryptic crossword id to " + nextId);
+                logger.info("Setting cryptic crossword id to " + nextId);
                 crosswordRepository.setNextIdForCrossword(nextId);
             }
         } else {
-            System.out.println(crosswordRepository.getIdForCrossword() + " is a retrievable crossword");
+            logger.info(crosswordRepository.getIdForCrossword() + " is a retrievable crossword");
         }
     }
 

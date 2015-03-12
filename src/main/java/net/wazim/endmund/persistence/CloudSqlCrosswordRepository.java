@@ -3,6 +3,8 @@ package net.wazim.endmund.persistence;
 import net.wazim.endmund.domain.EdmundSolution;
 import net.wazim.endmund.domain.GuardianClueAndSolution;
 import net.wazim.endmund.utils.NextIdGenerator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
@@ -16,6 +18,7 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
     @Autowired
     private SimpMessageSendingOperations simpMessageSendingOperations;
 
+    private Logger logger = LoggerFactory.getLogger(CloudSqlCrosswordRepository.class);
     private final JdbcTemplate jdbcTemplate;
     private final NextIdGenerator nextIdGenerator;
     private List<GuardianClueAndSolution> allCluesAndSolutions = new ArrayList<>();
@@ -65,7 +68,7 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
 
     @Override
     public void addEndmundSolution(GuardianClueAndSolution cluesAndSolution, String solution) {
-        System.out.println(String.format("Edmund solved the clue -- %s -- as %s and the correct answer was %s",
+        logger.info(String.format("Edmund solved the clue -- %s -- as %s and the correct answer was %s",
                 cluesAndSolution.getClue(),
                 solution,
                 cluesAndSolution.getClueSolution()));

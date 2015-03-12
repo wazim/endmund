@@ -10,6 +10,7 @@
 *.jar*
 *dictionary*
 *thesaurus*
+*database-details*
 
 # Mac
 .DS_Store
