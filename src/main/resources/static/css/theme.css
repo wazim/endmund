@@ -24,6 +24,7 @@ h1 {
     width: 280px;
     position: relative;
     margin-top: -70px;
+    margin-bottom: -30px;
 }
 
 .result {
@@ -34,4 +35,8 @@ h1 {
     overflow-y: scroll;
     overflow-x: hidden;
     height: 50%;
+}
+
+.numberOfClues {
+    margin-bottom: 10px;
 }

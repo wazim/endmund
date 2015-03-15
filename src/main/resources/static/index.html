@@ -36,8 +36,13 @@
              hide-min-max="{{hideMinMax}}"
              max="{{max}}">
         </div>
-    </center>
 
+        <p>
+            <span class="numberOfClues">{{correctSolutions}}:{{results.length}}</span>
+        </p>
+
+    </center>
+    <hr>
     <div class="results">
         <div class="result row" ng-repeat="result in results | orderBy : 'id' : true">
             <div class="col-md-6">
