@@ -61,19 +61,23 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
             return new EdmundSolution(
                     guardianClueAndSolution,
                     resultSet.getString("edmund_solution"),
-                    resultSet.getInt("id")
+                    resultSet.getInt("id"),
+                    resultSet.getBoolean("hinted")
             );
         });
     }
 
     @Override
-    public void addEndmundSolution(GuardianClueAndSolution cluesAndSolution, String solution) {
+    public void addEndmundSolution(GuardianClueAndSolution cluesAndSolution, String solution, boolean hinted) {
         logger.info(String.format("Edmund solved the clue -- %s -- as %s and the correct answer was %s",
                 cluesAndSolution.getClue(),
                 solution,
                 cluesAndSolution.getClueSolution()));
-        EdmundSolution edmundSolution = new EdmundSolution(cluesAndSolution, solution, nextIdGenerator.getNextId());
+
+        EdmundSolution edmundSolution = new EdmundSolution(cluesAndSolution, solution, nextIdGenerator.getNextId(), hinted);
+
         simpMessageSendingOperations.convertAndSend("/topic/solutions", edmundSolution);
+
         jdbcTemplate.update(String.format("INSERT INTO solutions " +
                         "(id, clue, solution_length, solution, edmund_solution)" +
                         " VALUES " +

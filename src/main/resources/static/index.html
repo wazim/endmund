@@ -45,7 +45,7 @@
     <hr>
     <div class="results">
         <div class="result row" ng-repeat="result in results | orderBy : 'id' : true">
-            <div class="col-md-6">
+            <div class="col-md-5">
                 {{result.guardianClueAndSolution.clue}}
             </div>
             <div class="col-md-3">
@@ -53,6 +53,9 @@
             </div>
             <div class="col-md-3" ng-class="(result.edmundCorrect===true) ? 'correct' : 'incorrect'">
                 {{result.edmundSolution}}
+            </div>
+            <div class="col-md-1">
+                {{result.hinted}}
             </div>
         </div>
     </div>

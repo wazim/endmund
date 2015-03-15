@@ -13,13 +13,21 @@ public class NextIdGenerator {
     }
 
     public int getNextId() {
-        int lastId = getLastId().get(0);
+        int lastId = getLastId();
 
-        return lastId+1;
+        return lastId + 1;
     }
 
-    private List<Integer> getLastId() {
-        return jdbcTemplate.query("SELECT id FROM solutions ORDER BY id DESC LIMIT 1", (resultSet, i) -> resultSet.getInt("id"));
+    private int getLastId() {
+        List<Integer> id = jdbcTemplate.query("SELECT id FROM solutions ORDER BY id DESC LIMIT 1", (resultSet, i) -> {
+            return resultSet.getInt("id");
+        });
+
+        if (id.size() > 0) {
+            return id.get(0);
+        }
+
+        return -1;
     }
 
 }

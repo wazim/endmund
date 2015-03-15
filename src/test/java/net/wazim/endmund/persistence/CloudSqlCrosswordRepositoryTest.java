@@ -32,7 +32,7 @@ public class CloudSqlCrosswordRepositoryTest {
 
     @Test
     public void canGetAllEdmundSolutions() {
-        List<Object> edmundSolutions = asList(new EdmundSolution(new GuardianClueAndSolution("Hello", "Hi", 2), "Hi", 1));
+        List<Object> edmundSolutions = asList(new EdmundSolution(new GuardianClueAndSolution("Hello", "Hi", 2), "Hi", 1, false));
         when(jdbcTemplate.query(any(String.class), any(RowMapper.class)))
                 .thenReturn(edmundSolutions);
         assertThat(cloudSqlCrosswordRepository.getAllEdmundSolutions(), is(edmundSolutions));

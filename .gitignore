@@ -11,6 +11,8 @@
 *dictionary*
 *thesaurus*
 *database-details*
+properties/
+*.properties
 
 # Mac
 .DS_Store

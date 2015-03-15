@@ -4,6 +4,7 @@ import net.wazim.endmund.client.EndmundResponseHandler;
 import net.wazim.endmund.client.GuardianCrosswordClient;
 import net.wazim.endmund.domain.GuardianClueAndSolution;
 import net.wazim.endmund.persistence.CrosswordRepository;
+import net.wazim.endmund.utils.HintToggler;
 import org.apache.commons.io.FileUtils;
 import org.json.JSONArray;
 import org.slf4j.Logger;
@@ -27,6 +28,9 @@ public class EndmundExecutor {
 
     private Logger logger = LoggerFactory.getLogger(EndmundExecutor.class);
     public static final String BASE_EDMUND_URL = "http://localhost:9090";
+
+    @Autowired
+    private HintToggler hintToggler;
     @Autowired
     private GuardianCrosswordClient guardianCrosswordClient;
     @Autowired
@@ -35,7 +39,7 @@ public class EndmundExecutor {
     private Process edmundRunningProcess;
     public static final String DOWNLOAD_LINK_FOR_LATEST_RELEASE = "https://s3-eu-west-1.amazonaws.com/project-edmund/project-Edmund.jar";
 
-    @Scheduled(fixedDelayString = "${schedule.delay}", initialDelay = 60000)
+    @Scheduled(fixedDelayString = "${schedule.delay}", initialDelay = 0)
     public void runEndToEndTesting() {
         logger.info("Starting schedule...");
         try {
@@ -54,20 +58,46 @@ public class EndmundExecutor {
         restTemplate.setErrorHandler(new EndmundResponseHandler());
         for (GuardianClueAndSolution cluesAndSolution : cluesAndSolutions) {
             try {
-                ResponseEntity<String> solution = restTemplate.getForEntity(BASE_EDMUND_URL + "/solve" +
-                        "?clue=" + cluesAndSolution.getClue() +
-                        "&hint=" +
-                        "&length=" + cluesAndSolution.getSolutionLength(), String.class);
+                ResponseEntity<String> solution = createRequest(restTemplate, cluesAndSolution);
+
                 if (solution.getStatusCode().is2xxSuccessful()) {
                     String solutionElement = extractSolution(solution.getBody());
                     if (solutionElement.length() > 2) {
-                        crosswordRepository.addEndmundSolution(cluesAndSolution, solutionElement);
+                        crosswordRepository.addEndmundSolution(cluesAndSolution, solutionElement, hintToggler.isToggleOn());
                     }
                 }
             } catch (Exception ignored) {
             }
         }
         logger.info("Finished running clues!");
+    }
+
+    private ResponseEntity<String> createRequest(RestTemplate restTemplate, GuardianClueAndSolution cluesAndSolution) {
+        if (hintToggler.isToggleOn()) {
+            return restTemplate.getForEntity(BASE_EDMUND_URL + "/solve" +
+                    "?clue=" + cluesAndSolution.getClue() +
+                    "&hint=" + createHint(cluesAndSolution) +
+                    "&length=" + cluesAndSolution.getSolutionLength(), String.class
+            );
+        } else {
+            return restTemplate.getForEntity(BASE_EDMUND_URL + "/solve" +
+                    "?clue=" + cluesAndSolution.getClue() +
+                    "&hint=" +
+                    "&length=" + cluesAndSolution.getSolutionLength(), String.class
+            );
+        }
+    }
+
+    public static String createHint(GuardianClueAndSolution cluesAndSolution) {
+        StringBuilder hint = new StringBuilder();
+
+        hint.append(cluesAndSolution.getClueSolution().substring(0, 1));
+        int numberOfFollowingLetters = cluesAndSolution.getSolutionLength() - 1;
+        for(int i=0; i<numberOfFollowingLetters; i++) {
+            hint.append(".");
+        }
+
+        return hint.toString().toUpperCase();
     }
 
     private static String extractSolution(String body) {
@@ -111,7 +141,7 @@ public class EndmundExecutor {
                 try {
                     ResponseEntity<String> responseFromEdmund = restTemplate.getForEntity(BASE_EDMUND_URL, String.class);
                     edmundResponse = responseFromEdmund.getStatusCode().value();
-                    logger.info("Response from Edmund: "+edmundResponse);
+                    logger.info("Response from Edmund: " + edmundResponse);
                 } catch (Exception e) {
                     logger.warn(String.format("Couldn't connect because %s. Retrying...", e.getMessage()));
                 }

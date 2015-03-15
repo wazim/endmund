@@ -5,11 +5,13 @@ public class EdmundSolution {
     private final GuardianClueAndSolution guardianClueAndSolution;
     private final String edmundSolution;
     private final int id;
+    private final boolean hinted;
 
-    public EdmundSolution(GuardianClueAndSolution guardianClueAndSolution, String edmundSolution, int id) {
+    public EdmundSolution(GuardianClueAndSolution guardianClueAndSolution, String edmundSolution, int id, boolean hinted) {
         this.guardianClueAndSolution = guardianClueAndSolution;
         this.edmundSolution = edmundSolution;
         this.id = id;
+        this.hinted = hinted;
     }
 
     public String getEdmundSolution() {
@@ -26,6 +28,10 @@ public class EdmundSolution {
 
     public int getId() {
         return id;
+    }
+
+    public boolean isHinted() {
+        return hinted;
     }
 
 }

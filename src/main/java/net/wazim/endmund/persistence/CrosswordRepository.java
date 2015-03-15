@@ -17,5 +17,5 @@ public interface CrosswordRepository {
 
     List<EdmundSolution> getAllEdmundSolutions();
 
-    void addEndmundSolution(GuardianClueAndSolution cluesAndSolution, String solution);
+    void addEndmundSolution(GuardianClueAndSolution cluesAndSolution, String solution, boolean hinted);
 }
