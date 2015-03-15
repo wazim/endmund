@@ -19,3 +19,8 @@ Endmund deploys Edmund, starts it up and starts hammering it with clues. Endmund
 Upon completion, Endmund will forcefully shut down Project Edmund and delete the leftovers. 
 
 The cycle will begin again when the user defined interval has finished.
+
+## What it looks like
+Endmund proves that end-to-end testing can be fun!
+
+<img src="https://s3-eu-west-1.amazonaws.com/project-edmund/edmund.png">
