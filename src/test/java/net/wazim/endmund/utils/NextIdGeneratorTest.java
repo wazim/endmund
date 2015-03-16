@@ -28,9 +28,9 @@ public class NextIdGeneratorTest {
     @Test
     public void canGetTheNextId() {
         when(jdbcTemplate.query(any(String.class), any(RowMapper.class))).thenReturn(asList(0));
-        assertThat(nextIdGenerator.getNextId(), is(1));
+        assertThat(nextIdGenerator.getNextId(), is(0));
         when(jdbcTemplate.query(any(String.class), any(RowMapper.class))).thenReturn(asList(1));
-        assertThat(nextIdGenerator.getNextId(), is(2));
+        assertThat(nextIdGenerator.getNextId(), is(1));
 
     }
 

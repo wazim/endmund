@@ -7,7 +7,6 @@ import net.wazim.endmund.persistence.CrosswordRepository;
 import net.wazim.endmund.utils.HintToggler;
 import net.wazim.endmund.utils.NextIdGenerator;
 import org.postgresql.ds.PGSimpleDataSource;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;

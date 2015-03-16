@@ -97,7 +97,7 @@ public class EndmundExecutor {
             hint.append(".");
         }
 
-        return hint.toString().toUpperCase();
+        return hint.toString().toLowerCase();
     }
 
     private static String extractSolution(String body) {
@@ -116,6 +116,8 @@ public class EndmundExecutor {
         }
 
         runtime.exec("rm -rf " + edmundJarName);
+        runtime.exec("rm -rf dictionary");
+        runtime.exec("rm -rf thesaurus.txt");
         logger.info("Deleted Edmund JAR");
     }
 

@@ -12,7 +12,7 @@ public class EndmundExecutorTest {
     @Test
     public void canCreateAValidHint() {
         GuardianClueAndSolution clueAndSolution = new GuardianClueAndSolution("This lord is more cunning", "archer", 6);
-        assertThat(createHint(clueAndSolution), is("A....."));
+        assertThat(createHint(clueAndSolution), is("a....."));
     }
 
 }

@@ -38,7 +38,6 @@ public class EndmundController {
     @RequestMapping(value = "toggle", method = POST)
     public void toggleHints() {
         hintToggle.toggleHints();
-        logger.info("Hint Toggle is set to : " + hintToggle.isToggleOn());
     }
 
 }

@@ -12,6 +12,8 @@ import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import java.util.ArrayList;
 import java.util.List;
 
+import static java.lang.String.format;
+
 @SuppressWarnings("unused")
 public class CloudSqlCrosswordRepository implements CrosswordRepository {
 
@@ -69,7 +71,7 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
 
     @Override
     public void addEndmundSolution(GuardianClueAndSolution cluesAndSolution, String solution, boolean hinted) {
-        logger.info(String.format("Edmund solved the clue -- %s -- as %s and the correct answer was %s",
+        logger.info(format("Edmund solved the clue -- %s -- as %s and the correct answer was %s",
                 cluesAndSolution.getClue(),
                 solution,
                 cluesAndSolution.getClueSolution()));
@@ -78,15 +80,18 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
 
         simpMessageSendingOperations.convertAndSend("/topic/solutions", edmundSolution);
 
-        jdbcTemplate.update(String.format("INSERT INTO solutions " +
-                        "(id, clue, solution_length, solution, edmund_solution)" +
+        jdbcTemplate.update(format(
+                "INSERT INTO solutions " +
+                        "(id, clue, solution_length, solution, edmund_solution, hinted)" +
                         " VALUES " +
-                        "(%d, '%s', %d, '%s', '%s')"
-                , edmundSolution.getId(),
+                        "(%d, '%s', %d, '%s', '%s', '%s')",
+                edmundSolution.getId(),
                 edmundSolution.getGuardianClueAndSolution().getClue(),
                 edmundSolution.getGuardianClueAndSolution().getSolutionLength(),
                 edmundSolution.getGuardianClueAndSolution().getClueSolution(),
-                edmundSolution.getEdmundSolution()));
+                edmundSolution.getEdmundSolution(),
+                hinted
+        ));
     }
 
 }
