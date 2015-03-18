@@ -19,7 +19,7 @@ public class NextIdGenerator {
 
         if (id.size() > 0) {
             Integer idToReturn = id.get(0);
-            jdbcTemplate.update("UPDATE id_generator SET id=" + idToReturn + 1);
+            jdbcTemplate.update("UPDATE id_generator SET id=" + (idToReturn + 1));
             return idToReturn;
         }
 

@@ -71,14 +71,9 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
 
     @Override
     public void addEndmundSolution(GuardianClueAndSolution cluesAndSolution, String solution, boolean hinted) {
-        logger.info(format("Edmund solved the clue -- %s -- as %s and the correct answer was %s",
-                cluesAndSolution.getClue(),
-                solution,
-                cluesAndSolution.getClueSolution()));
+        int numberOfSolutionsBeforeInsert = numberOfSolutionsInDatabase();
 
         EdmundSolution edmundSolution = new EdmundSolution(cluesAndSolution, solution, nextIdGenerator.getNextId(), hinted);
-
-        simpMessageSendingOperations.convertAndSend("/topic/solutions", edmundSolution);
 
         jdbcTemplate.update(format(
                 "INSERT INTO solutions " +
@@ -92,6 +87,32 @@ public class CloudSqlCrosswordRepository implements CrosswordRepository {
                 edmundSolution.getEdmundSolution(),
                 hinted
         ));
+
+        waitUntilInsertConfirmed(numberOfSolutionsBeforeInsert);
+
+        logger.info(format("Edmund solved the clue -- %s -- as %s and the correct answer was %s",
+                cluesAndSolution.getClue(),
+                solution,
+                cluesAndSolution.getClueSolution()));
+
+        simpMessageSendingOperations.convertAndSend("/topic/solutions", edmundSolution);
+    }
+
+    private void waitUntilInsertConfirmed(int numberOfSolutionsBeforeInsert) {
+        int numberOfSolutionsAfterInsert = numberOfSolutionsInDatabase();
+
+        while (numberOfSolutionsAfterInsert != (numberOfSolutionsBeforeInsert + 1)) {
+            logger.info("Endmund hasn't inserted into the database yet... One second...");
+            numberOfSolutionsAfterInsert = numberOfSolutionsInDatabase();
+            try {
+                Thread.sleep(700);
+            } catch (InterruptedException ignored) {
+            }
+        }
+    }
+
+    private int numberOfSolutionsInDatabase() {
+        return jdbcTemplate.query("SELECT COUNT (*) FROM solutions", (resultSet, i) -> resultSet.getInt("count")).get(0);
     }
 
 }
