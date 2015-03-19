@@ -123,7 +123,7 @@ public class EndmundExecutor {
 
     private void deployAndStartEdmund() throws InterruptedException, IOException {
         Runtime runtime = Runtime.getRuntime();
-        RestTemplate restTemplate = new RestTemplate();
+        RestTemplate restTemplate = new RestTemplate(clientHttpRequestFactory());
         restTemplate.setErrorHandler(new EndmundResponseHandler());
 
 
@@ -155,8 +155,8 @@ public class EndmundExecutor {
 
     private ClientHttpRequestFactory clientHttpRequestFactory() {
         HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory();
-        factory.setReadTimeout(3500);
-        factory.setConnectTimeout(3500);
+        factory.setReadTimeout(10000);
+        factory.setConnectTimeout(10000);
         return factory;
     }
 
