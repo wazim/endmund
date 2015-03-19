@@ -18,5 +18,6 @@ properties/
 .DS_Store
 
 # Maven
+logs/
 log/
 target/
